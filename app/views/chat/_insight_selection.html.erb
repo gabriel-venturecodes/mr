@@ -1,0 +1,131 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <!-- User Message -->
+  <div class="flex items-start space-x-4 justify-end">
+    <div class="flex-1 max-w-3xl">
+      <div class="bg-green-600 rounded-lg p-4 ml-12">
+        <p class="text-white"><%= brief %></p>
+      </div>
+    </div>
+    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+      <span class="text-white text-sm">U</span>
+    </div>
+  </div>
+
+  <!-- AI Response with Multiple Insights -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 rounded-lg p-6">
+        
+        <!-- Analysis Summary -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-3">🎯 Multiple Research Paths Found</h3>
+          <p class="text-gray-200 leading-relaxed">
+            I've discovered <%= pluralize(hypotheses.count, 'distinct insight') %> from your research brief. 
+            Each represents a different angle to explore. Choose the path that interests you most to dive deeper.
+          </p>
+        </div>
+
+        <!-- Insight Selection Cards -->
+        <div class="space-y-4 mb-6">
+          <% hypotheses.each_with_index do |hypothesis, index| %>
+            <div class="bg-gray-900 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors cursor-pointer group"
+                 data-controller="insight-selector"
+                 data-insight-selector-hypothesis-id-value="<%= hypothesis.id %>"
+                 data-action="click->insight-selector#selectInsight">
+              
+              <div class="p-5">
+                <div class="flex items-start space-x-4">
+                  <!-- Insight Number -->
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 group-hover:from-blue-500 group-hover:to-purple-500 transition-colors">
+                    <span class="text-white font-bold text-lg"><%= index + 1 %></span>
+                  </div>
+                  
+                  <!-- Insight Content -->
+                  <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
+                      <%= hypothesis.title %>
+                    </h4>
+                    <p class="text-gray-300 leading-relaxed mb-3">
+                      <%= hypothesis.summary %>
+                    </p>
+                    
+                    <!-- Insight Meta -->
+                    <div class="flex items-center space-x-4 text-sm text-gray-400">
+                      <span class="inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <%= hypothesis.status.humanize %>
+                      </span>
+                      <span>
+                        <%= pluralize(hypothesis.claims.count, 'supporting claim') %>
+                      </span>
+                      <span>
+                        Evidence strength: <%= hypothesis.claims.verified.count > 0 ? 'Strong' : 'Moderate' %>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Selection Arrow -->
+                  <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-500 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Alternative Actions -->
+        <div class="border-t border-gray-700 pt-6">
+          <div class="flex flex-wrap gap-3">
+            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    data-action="click->insights-overview#showAllInsights">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+              </svg>
+              See All Insights Detail
+            </button>
+            
+            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    data-action="click->insights-overview#showDocuments">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              See Documents
+            </button>
+            
+            <button class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                    data-action="click->insights-overview#askNewQuestion">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Ask New Question
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation continuation hint -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg opacity-60" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 border border-gray-700">
+        <p class="text-gray-300 text-sm italic">
+          💡 <strong>Tip:</strong> Once you select an insight, I'll help you explore it deeper. You can also upload additional documents to challenge or strengthen the findings, creating a comprehensive research conversation.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>

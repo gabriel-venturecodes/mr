@@ -1,0 +1,164 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <!-- Selected Insight Header -->
+  <div class="bg-gradient-to-r from-blue-900 to-purple-900 rounded-lg p-1">
+    <div class="bg-gray-900 rounded-lg p-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold">Exploring Selected Insight</h3>
+          <p class="text-blue-200 text-sm">Let's dive deeper into this research path</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Insight View -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 rounded-lg p-6">
+        
+        <!-- Insight Title -->
+        <div class="mb-6">
+          <h3 class="text-xl font-bold text-white mb-3"><%= hypothesis.title %></h3>
+          <p class="text-gray-200 leading-relaxed text-lg">
+            <%= hypothesis.summary %>
+          </p>
+        </div>
+
+        <!-- Status and Meta -->
+        <div class="flex items-center space-x-4 mb-6">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm 
+            <%= hypothesis.status == 'verified' ? 'bg-green-900 text-green-200' : 
+                hypothesis.status == 'needs_evidence' ? 'bg-yellow-900 text-yellow-200' : 
+                'bg-red-900 text-red-200' %>">
+            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <%= hypothesis.status.humanize %>
+          </span>
+          
+          <span class="text-sm text-gray-400">
+            <%= pluralize(hypothesis.claims.count, 'supporting claim') %>
+          </span>
+          
+          <span class="text-sm text-gray-400">
+            Evidence strength: <%= hypothesis.claims.verified.count > 0 ? 'Strong' : 'Moderate' %>
+          </span>
+        </div>
+
+        <!-- Supporting Claims -->
+        <div class="space-y-4 mb-6">
+          <h4 class="text-lg font-semibold text-white">Supporting Evidence</h4>
+          <% hypothesis.claims.each do |claim| %>
+            <div class="bg-gray-900 rounded-lg p-4 border-l-4 border-blue-500">
+              <div class="flex items-start justify-between mb-2">
+                <p class="text-gray-200 flex-1"><%= claim.text %></p>
+                <% if claim.explanation.present? %>
+                  <span class="ml-3 px-2 py-1 bg-blue-700 text-blue-200 text-xs rounded">
+                    <%= claim.status.humanize %>
+                  </span>
+                <% end %>
+              </div>
+              
+              <% if claim.explanation.present? %>
+                <div class="mt-3 p-3 bg-gray-800 rounded border-l-2 border-blue-400">
+                  <p class="text-sm text-gray-300 italic"><%= claim.explanation %></p>
+                  <% if claim.citation_chunk_ids.present? %>
+                    <div class="mt-2">
+                      <div class="flex items-center mb-1">
+                        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Evidence Sources:</span>
+                      </div>
+                      <div class="flex flex-wrap gap-1">
+                        <% 
+                          chunks_by_doc = claim.cited_chunks.includes(:document).group_by(&:document)
+                          chunks_by_doc.each do |document, chunks|
+                        %>
+                          <span class="inline-flex items-center px-2 py-1 rounded text-xs bg-blue-900 text-blue-200">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                            </svg>
+                            <%= document&.title || 'Document' %>
+                            <% if chunks.count > 1 %>
+                              <span class="ml-1 text-xs opacity-75">(#{chunks.count} sections)</span>
+                            <% end %>
+                          </span>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="border-t border-gray-700 pt-6">
+          <div class="flex flex-wrap gap-3">
+            <button class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    data-action="click->conversation#askFollowUp">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Ask Follow-up Question
+            </button>
+            
+            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    data-action="click->conversation#uploadMore">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+              Upload More Documents
+            </button>
+            
+            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    data-action="click->conversation#seeAlternatives">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+              </svg>
+              See Other Insights
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Follow-up prompt -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg opacity-60" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 border border-gray-700">
+        <h4 class="text-white font-medium mb-2">💡 What would you like to explore next?</h4>
+        <div class="space-y-2">
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->conversation#suggestQuestion"
+                  data-question="What are the implications of this insight for our strategy?">
+            "What are the implications of this insight for our strategy?"
+          </button>
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->conversation#suggestQuestion"
+                  data-question="What contradictory evidence might challenge this finding?">
+            "What contradictory evidence might challenge this finding?"
+          </button>
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->conversation#suggestQuestion"
+                  data-question="How does this compare to industry benchmarks?">
+            "How does this compare to industry benchmarks?"
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

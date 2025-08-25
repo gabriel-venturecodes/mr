@@ -1,0 +1,27 @@
+<div class="flex items-start space-x-4 <%= 'justify-end' if sender == 'user' %>">
+  <% if sender == 'assistant' %>
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg" %>
+    </div>
+  <% end %>
+  
+  <div class="flex-1 <%= 'max-w-3xl' if sender == 'user' %>">
+    <div class="<%= sender == 'user' ? 'bg-green-600 ml-12' : 'bg-gray-800' %> rounded-lg p-4">
+      <p class="<%= sender == 'user' ? 'text-white' : 'text-gray-200' %> leading-relaxed">
+        <%= simple_format(message.content['text']) %>
+      </p>
+      
+      <% if sender == 'assistant' && message.created_at %>
+        <div class="mt-2 text-xs text-gray-400">
+          <%= time_ago_in_words(message.created_at) %> ago
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <% if sender == 'user' %>
+    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+      <span class="text-white text-sm">U</span>
+    </div>
+  <% end %>
+</div>

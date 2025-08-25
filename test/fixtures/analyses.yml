@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  brief: MyText
+  status: MyString
+  progress: 1
+  status_message: MyText
+  hypotheses: 
+  error_message: MyText
+  completed_at: 2025-08-25 17:20:21
+
+two:
+  user: two
+  brief: MyText
+  status: MyString
+  progress: 1
+  status_message: MyText
+  hypotheses: 
+  error_message: MyText
+  completed_at: 2025-08-25 17:20:21

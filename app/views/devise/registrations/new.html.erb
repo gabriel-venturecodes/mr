@@ -1,0 +1,52 @@
+<div class="min-h-screen bg-chat-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div class="text-center">
+      <div class="mx-auto w-80 h-80 flex items-center justify-center mb-4">
+        <%= image_tag "mr-logo.png", alt: "MR Logo", class: "w-80 h-80 object-contain" %>
+      </div>
+      <h2 class="text-3xl font-bold text-white">Create your account</h2>
+      <p class="mt-2 text-gray-400">Get started with Market Research AI</p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), 
+        class: "mt-8 space-y-6", data: { turbo: false }) do |f| %>
+      
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="space-y-4">
+        <div>
+          <%= f.label :email, class: "block text-sm font-medium text-gray-300" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "mt-1 block w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent",
+              placeholder: "Enter your email" %>
+        </div>
+
+        <div>
+          <%= f.label :password, class: "block text-sm font-medium text-gray-300" %>
+          <%= f.password_field :password, autocomplete: "new-password",
+              class: "mt-1 block w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent",
+              placeholder: "Create a password" %>
+          <% if @minimum_password_length %>
+            <p class="mt-1 text-xs text-gray-400">Minimum <%= @minimum_password_length %> characters</p>
+          <% end %>
+        </div>
+
+        <div>
+          <%= f.label :password_confirmation, class: "block text-sm font-medium text-gray-300" %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password",
+              class: "mt-1 block w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent",
+              placeholder: "Confirm your password" %>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <%= f.submit "Create account", 
+            class: "w-3/4 mx-auto block bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500" %>
+      </div>
+    <% end %>
+
+    <div class="text-center space-y-2">
+      <%= render "devise/shared/links" %>
+    </div>
+  </div>
+</div>

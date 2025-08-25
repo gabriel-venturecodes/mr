@@ -1,0 +1,80 @@
+<% if hypothesis.audit_trail.present? %>
+  <div class="mt-6 bg-gray-900 rounded-lg border border-gray-700" data-controller="collapsible">
+    <button class="w-full p-4 border-b border-gray-700 text-left flex items-center justify-between hover:bg-gray-800 transition-colors" data-action="click->collapsible#toggle">
+      <div>
+        <h3 class="text-lg font-semibold text-white flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Audit Trail - How We Got This Answer
+        </h3>
+        <p class="text-gray-400 text-sm mt-1">
+          Analysis completed in <%= hypothesis.audit_trail['duration'] || "#{hypothesis.audit_trail['duration_ms']}ms" %> • 
+          <%= hypothesis.audit_trail['steps']&.count || 0 %> processing steps
+        </p>
+      </div>
+      <svg class="w-5 h-5 text-gray-400 transform transition-transform" data-collapsible-target="arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+
+    <div class="hidden p-4" data-collapsible-target="content">
+      <div class="space-y-4">
+        <% hypothesis.audit_trail['steps']&.each_with_index do |step, index| %>
+          <div class="flex items-start space-x-4">
+            <!-- Step number -->
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span class="text-white text-sm font-bold"><%= index + 1 %></span>
+            </div>
+
+            <!-- Step content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-2 mb-2">
+                <h4 class="text-white font-medium">
+                  <%= step['service'] %>
+                  <% if step['step'].present? %>
+                    <span class="text-gray-400">• <%= step['step'] %></span>
+                  <% end %>
+                </h4>
+                <span class="text-xs text-gray-500">
+                  <%= step['timestamp'] ? Time.parse(step['timestamp']).strftime('%H:%M:%S.%L') : '' %>
+                </span>
+              </div>
+
+              <div class="bg-gray-800 rounded-lg p-3 space-y-2">
+                <div>
+                  <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Input:</span>
+                  <p class="text-sm text-gray-300 mt-1"><%= step['input'] %></p>
+                </div>
+
+                <div>
+                  <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Output:</span>
+                  <p class="text-sm text-gray-300 mt-1"><%= step['output'] %></p>
+                </div>
+
+                <div class="border-t border-gray-700 pt-2">
+                  <span class="text-xs font-medium text-blue-400 uppercase tracking-wide">Conclusion:</span>
+                  <p class="text-sm text-white mt-1 font-medium"><%= step['conclusion'] %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Final summary -->
+      <div class="mt-6 p-4 bg-green-900 bg-opacity-30 border border-green-600 rounded-lg">
+        <div class="flex items-center space-x-2 mb-2">
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <h4 class="text-green-400 font-medium">Analysis Complete</h4>
+        </div>
+        <p class="text-gray-300 text-sm">
+          <strong>Research Question:</strong> "<%= hypothesis.audit_trail['brief'] %>"<br>
+          <strong>Final Result:</strong> Generated verified hypothesis with evidence-backed claims meeting validation criteria.
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>

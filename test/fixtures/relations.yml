@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  src_entity: one
+  dst_entity: one
+  relation_type: MyString
+  confidence: 9.99
+  prompt_version: MyString
+  model_id: MyString
+  input_hash: MyString
+
+two:
+  src_entity: two
+  dst_entity: two
+  relation_type: MyString
+  confidence: 9.99
+  prompt_version: MyString
+  model_id: MyString
+  input_hash: MyString

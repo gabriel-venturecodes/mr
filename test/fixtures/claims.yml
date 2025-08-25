@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  hypothesis: one
+  text: MyText
+  status: MyString
+  max_citation_similarity: 9.99
+  explanation: MyText
+  prompt_version: MyString
+  model_id: MyString
+  input_hash: MyString
+
+two:
+  hypothesis: two
+  text: MyText
+  status: MyString
+  max_citation_similarity: 9.99
+  explanation: MyText
+  prompt_version: MyString
+  model_id: MyString
+  input_hash: MyString

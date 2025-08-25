@@ -1,0 +1,127 @@
+<div class="max-w-4xl mx-auto space-y-6" data-controller="conversation">
+  
+  <!-- Selected Insight Summary -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-start space-x-3 mb-4">
+          <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <span class="text-white text-xs font-bold">✓</span>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-lg font-semibold text-white mb-2"><%= hypothesis.title %></h4>
+            <p class="text-gray-200 leading-relaxed mb-4"><%= hypothesis.summary %></p>
+            
+            <div class="flex items-center space-x-4 mb-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm 
+                <%= hypothesis.confidence >= 70 ? 'bg-green-900 text-green-200' : 
+                    hypothesis.confidence >= 50 ? 'bg-yellow-900 text-yellow-200' : 
+                    'bg-red-900 text-red-200' %>">
+                <%= hypothesis.confidence %>% Confidence
+              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-900 text-blue-200">
+                <%= pluralize(hypothesis.claims.verified.count, 'verified claim') %>
+              </span>
+            </div>
+            
+            <p class="text-green-400 text-sm font-medium">
+              ✓ Insight selected - What would you like to explore about this finding?
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation Messages -->
+  <div id="conversation-messages" class="space-y-4">
+    <!-- Previous conversation messages will appear here -->
+    <% conversation.conversation_messages.where.not(message_type: 'insight_selection').order(created_at: :asc).each do |message| %>
+      <%= render 'chat/conversation_message', message: message, sender: message.message_type %>
+    <% end %>
+  </div>
+
+  <!-- Suggested Questions -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <%= image_tag "mr-icon.png", alt: "MR Assistant", class: "w-8 h-8 object-contain rounded-lg" %>
+    </div>
+    <div class="flex-1">
+      <div class="bg-gray-800 rounded-lg p-4">
+        <p class="text-gray-200 mb-3">Here are some questions you can ask about this insight:</p>
+        <div class="space-y-2" data-controller="example-questions">
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->example-questions#fillQuestion"
+                  data-question="Tell me more about the evidence supporting this insight">
+            "Tell me more about the evidence supporting this insight"
+          </button>
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->example-questions#fillQuestion"
+                  data-question="What are the limitations or potential biases in this analysis?">
+            "What are the limitations or potential biases in this analysis?"
+          </button>
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->example-questions#fillQuestion"
+                  data-question="What actions should we take based on this insight?">
+            "What actions should we take based on this insight?"
+          </button>
+          <button class="block w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                  data-action="click->example-questions#fillQuestion"
+                  data-question="Show me the original source quotes for this insight">
+            "Show me the original source quotes for this insight"
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Input -->
+  <div class="flex items-start space-x-4">
+    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+      <span class="text-white text-sm">U</span>
+    </div>
+    <div class="flex-1">
+      <%= form_with url: continue_conversation_path, method: :post, 
+            class: "flex space-x-3", 
+            data: { 
+              controller: "conversation-form",
+              action: "turbo:submit-end->conversation-form#clearInput",
+              turbo_stream: true 
+            } do |form| %>
+        <%= form.text_field :message, 
+              placeholder: "Ask a follow-up question about this insight...", 
+              class: "flex-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent",
+              data: { 
+                conversation_form_target: "input",
+                action: "keydown->conversation-form#handleKeydown"
+              } %>
+        <%= form.submit "Send", 
+              class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-medium",
+              data: { conversation_form_target: "submit" } %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center justify-center space-x-4 pt-4 border-t border-gray-700">
+    <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            onclick="window.location.reload()">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      New Analysis
+    </button>
+    
+    <button class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            data-action="click->conversation#showOtherInsights">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+      See Other Insights
+    </button>
+  </div>
+
+</div>

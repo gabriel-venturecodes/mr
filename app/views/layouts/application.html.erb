@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "MR - Market Research AI" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <!-- Tailwind CSS from CDN for quick styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind for dark theme like ChatGPT -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'chat-bg': '#1a1a1a',
+              'chat-sidebar': '#171717',
+              'chat-input': '#2f2f2f',
+              'chat-border': '#4d4d4d'
+            }
+          }
+        }
+      }
+    </script>
+
+    <link rel="icon" href="<%= asset_path('mr-icon.png') %>" type="image/png">
+    <link rel="apple-touch-icon" href="<%= asset_path('mr-icon.png') %>">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    
+    <%# Include importmap and stimulus javascript %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-chat-bg text-white">
+    <!-- Flash Messages -->
+    <% if notice %>
+      <div class="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg" data-controller="flash-message" data-flash-message-timeout-value="5000">
+        <%= notice %>
+      </div>
+    <% end %>
+    
+    <% if alert %>
+      <div class="fixed top-4 right-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg" data-controller="flash-message" data-flash-message-timeout-value="5000">
+        <%= alert %>
+      </div>
+    <% end %>
+    
+    <%= yield %>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  document: one
+  text: MyText
+  chunk_hash: MyString
+  position: 1
+  meta: 
+
+two:
+  document: two
+  text: MyText
+  chunk_hash: MyString
+  position: 1
+  meta: 

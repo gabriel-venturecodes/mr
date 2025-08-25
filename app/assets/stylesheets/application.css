@@ -1,0 +1,41 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+/* Hide scrollbars for chat input textarea */
+textarea {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+textarea::-webkit-scrollbar { 
+  width: 0;
+  height: 0;
+  display: none; /* WebKit */
+}
+
+/* Ensure proper alignment and no outline issues */
+textarea:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ChatGPT-style input container */
+.chat-input-container {
+  background: #2f2f2f;
+  border: 1px solid #4d4d4d;
+  border-radius: 0.75rem;
+}
+
+.chat-input-container:focus-within {
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}

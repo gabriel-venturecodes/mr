@@ -1,0 +1,136 @@
+class RelationExtractionService
+  def self.extract_from_chunks(chunks, prompt_version: "v1.0")
+    new.extract_from_chunks(chunks, prompt_version: prompt_version)
+  end
+
+  def initialize
+    @ai_client = AiClient.new
+  end
+
+  def extract_from_chunks(chunks, prompt_version: "v1.0")
+    extracted_relations = []
+
+    chunks.each do |chunk|
+      begin
+        # Get entities mentioned in this chunk
+        chunk_entities = get_entities_in_chunk(chunk)
+        next if chunk_entities.count < 2  # Need at least 2 entities for a relation
+
+        # Extract relations between entities in this chunk
+        relations_data = @ai_client.extract_relations(chunk, chunk_entities, prompt_version: prompt_version)
+
+        relations_data.each do |relation_data|
+          relation = process_relation(relation_data, chunk, chunk_entities, prompt_version)
+          extracted_relations << relation if relation
+        end
+      rescue => e
+        Rails.logger.error "Failed to extract relations from chunk #{chunk.id}: #{e.message}"
+        next
+      end
+    end
+
+    extracted_relations
+  end
+
+  private
+
+  def get_entities_in_chunk(chunk)
+    # Find entities that were extracted from this chunk or are mentioned in it
+    # This is a simplified approach - in production, we'd use NER to find entity mentions
+    chunk_text_lower = chunk.text.downcase
+
+    Entity.all.select do |entity|
+      entity_mentions = [entity.name, entity.canonical_key].compact.map(&:downcase)
+      entity_mentions.any? { |mention| chunk_text_lower.include?(mention) }
+    end
+  end
+
+  def process_relation(relation_data, chunk, chunk_entities, prompt_version)
+    src_name = relation_data['src']
+    dst_name = relation_data['dst']
+    relation_type = relation_data['type']
+    confidence = relation_data['confidence']
+
+    # Find source and destination entities
+    src_entity = find_entity_by_name(src_name, chunk_entities)
+    dst_entity = find_entity_by_name(dst_name, chunk_entities)
+
+    unless src_entity && dst_entity
+      Rails.logger.warn "Could not find entities for relation: #{src_name} -> #{dst_name}"
+      return nil
+    end
+
+    # Check if this relation already exists
+    existing_relation = Relation.find_by(
+      src_entity: src_entity,
+      dst_entity: dst_entity,
+      relation_type: relation_type
+    )
+
+    if existing_relation
+      # Update existing relation with new evidence
+      update_existing_relation(existing_relation, chunk, confidence)
+    else
+      # Create new relation
+      create_new_relation(
+        src_entity, dst_entity, relation_type, confidence,
+        chunk, prompt_version
+      )
+    end
+  rescue => e
+    Rails.logger.error "Failed to process relation #{src_name} -> #{dst_name}: #{e.message}"
+    nil
+  end
+
+  def find_entity_by_name(name, entities)
+    entities.find do |entity|
+      [entity.name, entity.canonical_key].any? { |n| n.downcase == name.downcase }
+    end
+  end
+
+  def update_existing_relation(relation, chunk, confidence)
+    # Add this chunk to source chunks if not already there
+    source_chunk_ids = relation.source_chunk_ids || []
+    source_chunk_ids << chunk.id unless source_chunk_ids.include?(chunk.id)
+
+    # Update confidence with a weighted average
+    old_confidence = relation.confidence || 0.0
+    old_weight = (relation.meta&.dig('evidence_count') || 1)
+    new_weight = old_weight + 1
+
+    new_confidence = ((old_confidence * old_weight) + confidence) / new_weight
+
+    relation.update!(
+      source_chunk_ids: source_chunk_ids,
+      confidence: new_confidence,
+      meta: (relation.meta || {}).merge(
+        'evidence_count' => new_weight,
+        'last_seen_at' => Time.current
+      )
+    )
+
+    relation
+  end
+
+  def create_new_relation(src_entity, dst_entity, relation_type, confidence, chunk, prompt_version)
+    Relation.create!(
+      src_entity: src_entity,
+      dst_entity: dst_entity,
+      relation_type: relation_type,
+      confidence: confidence,
+      source_chunk_ids: [chunk.id],
+      prompt_version: prompt_version,
+      model_id: "gpt-4o-mini",
+      input_hash: generate_input_hash(chunk, src_entity, dst_entity, prompt_version),
+      meta: {
+        'evidence_count' => 1,
+        'first_seen_at' => Time.current
+      }
+    )
+  end
+
+  def generate_input_hash(chunk, src_entity, dst_entity, prompt_version)
+    content = "#{chunk.text}-#{src_entity.id}-#{dst_entity.id}-#{prompt_version}-relations"
+    Digest::SHA256.hexdigest(content)
+  end
+end

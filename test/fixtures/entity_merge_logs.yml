@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  original: MyString
+  normalized: MyString
+  merged_into: MyString
+  similarity: 9.99
+  entity_type: MyString
+
+two:
+  original: MyString
+  normalized: MyString
+  merged_into: MyString
+  similarity: 9.99
+  entity_type: MyString
