@@ -3,7 +3,10 @@ class ChatController < ApplicationController
 
   def index
     @documents = Document.all.order(created_at: :desc)
-    @recent_hypotheses = Hypothesis.verified.limit(5).order(created_at: :desc)
+    @recent_analyses = Analysis.includes(:hypotheses)
+                              .where(analyses: { status: 'completed' })
+                              .order(created_at: :desc)
+                              .limit(5)
   end
 
   # def analyze
@@ -68,6 +71,7 @@ class ChatController < ApplicationController
 
     begin
       # Store uploaded files temporarily and create file objects
+      Rails.logger.info "Processing #{uploaded_files.count} uploaded files with analysis"
       uploaded_file_objects = uploaded_files.map do |file|
         temp_path = Rails.root.join('tmp', 'uploads', "#{SecureRandom.uuid}_#{file.original_filename}")
         FileUtils.mkdir_p(File.dirname(temp_path))
@@ -90,6 +94,8 @@ class ChatController < ApplicationController
         end
       end
 
+      Rails.logger.info "Uploaded file objects: #{uploaded_file_objects.inspect}"
+
       # Run analysis synchronously using OrchestratorAgent
       if uploaded_file_objects.any?
         result = OrchestratorAgent.new.analyze_with_new_documents(brief, uploaded_file_objects)
@@ -99,6 +105,8 @@ class ChatController < ApplicationController
 
       # Clean up temporary files
       uploaded_file_objects.each(&:close) if uploaded_file_objects
+
+      Rails.logger.info "Result we have a result here"
       
       if result[:success]
         # Create analysis record
@@ -172,7 +180,7 @@ class ChatController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream do
-        render turbo_stream: turbo_stream.replace("chat-messages",
+        render turbo_stream: turbo_stream.replace("chat-content",
           partial: "chat/conversation_interface",
           locals: {
             hypothesis: hypothesis,

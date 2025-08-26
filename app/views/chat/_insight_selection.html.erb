@@ -1,16 +1,18 @@
 <div class="max-w-4xl mx-auto space-y-6">
   
   <!-- User Message -->
-  <div class="flex items-start space-x-4 justify-end">
-    <div class="flex-1 max-w-3xl">
-      <div class="bg-green-600 rounded-lg p-4 ml-12">
-        <p class="text-white"><%= brief %></p>
+  <% if local_assigns[:brief] %>
+    <div class="flex items-start space-x-4 justify-end">
+      <div class="flex-1 max-w-3xl">
+        <div class="bg-green-600 rounded-lg p-4 ml-12">
+          <p class="text-white"><%= local_assigns[:brief] %></p>
+        </div>
+      </div>
+      <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+        <span class="text-white text-sm">U</span>
       </div>
     </div>
-    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
-      <span class="text-white text-sm">U</span>
-    </div>
-  </div>
+  <% end %>
 
   <!-- AI Response with Multiple Insights -->
   <div class="flex items-start space-x-4">
@@ -54,19 +56,27 @@
                     </p>
                     
                     <!-- Insight Meta -->
-                    <div class="flex items-center space-x-4 text-sm text-gray-400">
-                      <span class="inline-flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="flex items-center space-x-4 text-sm">
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs 
+                        <%= hypothesis.status == 'verified' ? 'bg-green-900 text-green-200' : 
+                            hypothesis.status == 'needs_evidence' ? 'bg-yellow-900 text-yellow-200' : 
+                            'bg-red-900 text-red-200' %>">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         <%= hypothesis.status.humanize %>
                       </span>
-                      <span>
+                      <span class="text-gray-400">
                         <%= pluralize(hypothesis.claims.count, 'supporting claim') %>
                       </span>
-                      <span>
-                        Evidence strength: <%= hypothesis.claims.verified.count > 0 ? 'Strong' : 'Moderate' %>
-                      </span>
+                      <% if hypothesis.claims.verified.any? %>
+                        <% max_similarity = hypothesis.claims.verified.map(&:max_citation_similarity).compact.max %>
+                        <% if max_similarity %>
+                          <span class="text-gray-400">
+                            Verified by source chunks (max similarity <%= "#{(max_similarity * 100).round(1)}%" %> from 1 document)
+                          </span>
+                        <% end %>
+                      <% end %>
                     </div>
                   </div>
                   
@@ -82,34 +92,12 @@
           <% end %>
         </div>
 
-        <!-- Alternative Actions -->
-        <div class="border-t border-gray-700 pt-6">
-          <div class="flex flex-wrap gap-3">
-            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                    data-action="click->insights-overview#showAllInsights">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-              </svg>
-              See All Insights Detail
-            </button>
-            
-            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                    data-action="click->insights-overview#showDocuments">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              See Documents
-            </button>
-            
-            <button class="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                    data-action="click->insights-overview#askNewQuestion">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Ask New Question
-            </button>
+        <!-- Audit Trail -->
+        <% if local_assigns[:analysis] && hypotheses.first&.audit_trail.present? %>
+          <div class="border-t border-gray-700 pt-6">
+            <%= render 'chat/audit_trail', hypothesis: hypotheses.first %>
           </div>
-        </div>
+        <% end %>
       </div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 class ConversationMessage < ApplicationRecord
   belongs_to :conversation
 
-  enum message_type: {
+  enum :message_type, {
     user_query: 'user_query',
     insight: 'insight',
     insight_selection: 'insight_selection',

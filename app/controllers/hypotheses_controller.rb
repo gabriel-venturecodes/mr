@@ -7,7 +7,10 @@ class HypothesesController < ApplicationController
 
     # Get all documents for sidebar and documents panel
     @documents = Document.where(processing_status: 'completed')
-    @recent_hypotheses = Hypothesis.where(status: 'verified').order(created_at: :desc).limit(5)
+    @recent_analyses = Analysis.includes(:hypotheses)
+                              .where(analyses: { status: 'completed' })
+                              .order(created_at: :desc)
+                              .limit(5)
 
     render 'chat/index'
   end
@@ -15,7 +18,10 @@ class HypothesesController < ApplicationController
   def index
     @hypotheses = Hypothesis.where(status: 'verified').order(created_at: :desc)
     @documents = Document.where(processing_status: 'completed')
-    @recent_hypotheses = @hypotheses.limit(5)
+    @recent_analyses = Analysis.includes(:hypotheses)
+                              .where(analyses: { status: 'completed' })
+                              .order(created_at: :desc)
+                              .limit(5)
 
     render 'chat/index'
   end

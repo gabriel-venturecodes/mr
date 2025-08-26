@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_25_142654) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_26_074536) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -134,6 +134,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_25_142654) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.json "audit_trail"
+    t.bigint "analysis_id"
+    t.index ["analysis_id"], name: "index_hypotheses_on_analysis_id"
     t.index ["status"], name: "index_hypotheses_on_status"
   end
 
@@ -174,6 +176,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_25_142654) do
   add_foreign_key "claims", "hypotheses"
   add_foreign_key "conversation_messages", "conversations"
   add_foreign_key "conversations", "users"
+  add_foreign_key "hypotheses", "analyses"
   add_foreign_key "relations", "entities", column: "dst_entity_id"
   add_foreign_key "relations", "entities", column: "src_entity_id"
 end

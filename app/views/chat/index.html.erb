@@ -23,28 +23,54 @@
       <div class="flex-1 px-4 py-4 overflow-y-auto">
         <div>
           <h3 class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">Recent Analyses</h3>
-          <% if @recent_hypotheses.any? %>
-            <div class="space-y-2">
-              <% @recent_hypotheses.each do |hypothesis| %>
+          <% if @recent_analyses.any? %>
+            <div class="space-y-3">
+              <% @recent_analyses.each do |analysis| %>
                 <div class="group relative">
-                  <%= link_to hypothesis_path(hypothesis), class: "block p-3 rounded-lg hover:bg-gray-800 transition-colors #{'bg-gray-800' if @hypotheses && @hypotheses.include?(hypothesis)}" do %>
-                    <p class="text-sm text-gray-300 line-clamp-2 leading-relaxed pr-6"><%= hypothesis.title %></p>
-                    <span class="text-xs text-green-400 mt-1 inline-block">✓ Verified</span>
-                  <% end %>
-                  
-                  <!-- Delete button -->
-                  <%= link_to hypothesis_path(hypothesis), 
-                      method: :delete, 
-                      class: "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded text-xs",
-                      title: "Delete analysis and documents",
-                      data: { 
-                        confirm: "Are you sure? This will delete the analysis and all associated documents.",
-                        turbo_method: :delete 
-                      } do %>
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  <% end %>
+                  <!-- Analysis Header -->
+                  <div class="p-3 bg-gray-800 rounded-lg">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1 pr-6">
+                        <p class="text-sm text-gray-300 line-clamp-2 leading-relaxed mb-2">
+                          <%= analysis.brief.length > 60 ? "#{analysis.brief[0..60]}..." : analysis.brief %>
+                        </p>
+                        <div class="flex items-center space-x-2">
+                          <span class="text-xs text-green-400">✓ Completed</span>
+                          <span class="text-xs text-gray-500">•</span>
+                          <span class="text-xs text-gray-500"><%= pluralize(analysis.insights_count, 'insight') %></span>
+                        </div>
+                      </div>
+                      
+                      <!-- Delete button -->
+                      <%= link_to analysis_path(analysis), 
+                          method: :delete, 
+                          class: "opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded text-xs",
+                          title: "Delete analysis and insights",
+                          data: { 
+                            confirm: "Are you sure? This will delete the analysis and all associated insights.",
+                            turbo_method: :delete 
+                          } do %>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      <% end %>
+                    </div>
+                    
+                    <!-- Nested Insights -->
+                    <% if analysis.hypothesis_data.any? %>
+                      <div class="mt-3 pl-3 border-l-2 border-gray-700 space-y-1">
+                        <% analysis.hypothesis_data.first(3).each_with_index do |hypothesis_data, index| %>
+                          <%= link_to hypothesis_path(hypothesis_data['id']), class: "block py-1 hover:text-green-400 transition-colors" do %>
+                            <span class="text-xs text-gray-400 mr-2"><%= index + 1 %>.</span>
+                            <span class="text-xs text-gray-300"><%= hypothesis_data['title'].length > 40 ? "#{hypothesis_data['title'][0..40]}..." : hypothesis_data['title'] %></span>
+                          <% end %>
+                        <% end %>
+                        <% if analysis.hypothesis_data.count > 3 %>
+                          <p class="text-xs text-gray-500 pl-4">+<%= analysis.hypothesis_data.count - 3 %> more insights</p>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
                 </div>
               <% end %>
             </div>
@@ -80,23 +106,24 @@
     <!-- Chat Messages Area with floating content -->
     <div class="flex-1 overflow-y-auto p-4">
       <%= turbo_frame_tag "chat-messages", class: "h-full" do %>
-        <% if @hypotheses && @hypotheses.any? %>
-          <!-- Combined Title and Analysis in Single Floating Card -->
-          <div class="max-w-4xl mx-auto">
-            <div class="bg-chat-sidebar rounded-xl border border-chat-border p-6 shadow-lg mb-6">
-              <div class="flex items-start justify-between mb-4">
-                <h1 class="text-2xl font-semibold text-white"><%= @hypotheses.first.title %></h1>
-                <button class="text-blue-400 text-sm hover:underline ml-4 flex-shrink-0" 
-                        data-action="click->documents-panel#toggle">
-                  See documents
-                </button>
+        <div id="chat-content">
+          <% if @hypotheses && @hypotheses.any? %>
+            <!-- Combined Title and Analysis in Single Floating Card -->
+            <div class="max-w-4xl mx-auto">
+              <div class="bg-chat-sidebar rounded-xl border border-chat-border p-6 shadow-lg mb-6">
+                <div class="flex items-start justify-between mb-4">
+                  <h1 class="text-2xl font-semibold text-white"><%= @hypotheses.first.title %></h1>
+                  <button class="text-blue-400 text-sm hover:underline ml-4 flex-shrink-0" 
+                          data-action="click->documents-panel#toggle">
+                    See documents
+                  </button>
+                </div>
+                
+                <!-- Analysis Results -->
+                <%= render 'chat/analysis_results', hypotheses: @hypotheses, brief: @brief %>
               </div>
-              
-              <!-- Analysis Results -->
-              <%= render 'chat/analysis_results', hypotheses: @hypotheses, brief: @brief %>
             </div>
-          </div>
-        <% else %>
+          <% else %>
           <!-- Welcome Message -->
           <div class="max-w-3xl mx-auto mb-8">
             <div class="flex items-start space-x-4">
@@ -166,6 +193,7 @@
             </div>
           </div>
         <% end %>
+        </div>
       <% end %>
     </div>
 

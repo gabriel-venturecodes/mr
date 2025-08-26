@@ -293,5 +293,4 @@ class AiClient
       # Remove any leading/trailing whitespace
       cleaned.strip
     end
-
-    def repair_json(invalid_output, schema, error_message)
+end

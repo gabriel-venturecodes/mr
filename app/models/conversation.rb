@@ -3,7 +3,7 @@ class Conversation < ApplicationRecord
   has_many :conversation_messages, dependent: :destroy
   has_many :analyses, dependent: :destroy
 
-  enum status: {
+  enum :status, {
     active: 'active',
     archived: 'archived',
     completed: 'completed'

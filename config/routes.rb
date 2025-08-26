@@ -19,6 +19,7 @@ Rails.application.routes.draw do
 
   resources :documents, only: [:create, :show, :index]
   resources :hypotheses, only: [:show, :index, :destroy]
+  resources :analyses, only: [:show, :index, :destroy]
 
   # Analysis workflow
   post "analyze", to: "chat#analyze"

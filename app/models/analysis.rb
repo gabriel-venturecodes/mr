@@ -1,8 +1,9 @@
 class Analysis < ApplicationRecord
   belongs_to :user
   belongs_to :conversation, optional: true
+  has_many :hypotheses, dependent: :destroy
 
-  enum status: {
+  enum :status, {
     pending: 'pending',
     processing: 'processing',
     completed: 'completed',
@@ -28,10 +29,20 @@ class Analysis < ApplicationRecord
   end
 
   def insights_count
-    hypotheses&.count || 0
+    # Use the ActiveRecord association if available, otherwise JSON
+    if hypotheses.loaded? || hypotheses.exists?
+      hypotheses.count
+    else
+      self[:hypotheses]&.count || 0
+    end
   end
 
   def has_multiple_insights?
     insights_count > 1
+  end
+  
+  # Helper method to get hypotheses data from JSON for display
+  def hypothesis_data
+    self[:hypotheses] || []
   end
 end

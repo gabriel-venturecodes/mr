@@ -1,4 +1,5 @@
 class Hypothesis < ApplicationRecord
+  belongs_to :analysis, optional: true
   has_many :claims, dependent: :destroy
 
   validates :title, presence: true

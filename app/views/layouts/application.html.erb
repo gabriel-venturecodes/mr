@@ -41,18 +41,16 @@
   </head>
 
   <body class="bg-chat-bg text-white">
-    <!-- Flash Messages -->
-    <% if notice %>
-      <div class="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg" data-controller="flash-message" data-flash-message-timeout-value="5000">
-        <%= notice %>
-      </div>
-    <% end %>
-    
-    <% if alert %>
-      <div class="fixed top-4 right-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg" data-controller="flash-message" data-flash-message-timeout-value="5000">
-        <%= alert %>
-      </div>
-    <% end %>
+    <!-- Flash Messages Container -->
+    <div id="flash">
+      <% if notice %>
+        <%= render 'shared/flash_message', message: notice, type: 'success' %>
+      <% end %>
+      
+      <% if alert %>
+        <%= render 'shared/flash_message', message: alert, type: 'error' %>
+      <% end %>
+    </div>
     
     <%= yield %>
   </body>
